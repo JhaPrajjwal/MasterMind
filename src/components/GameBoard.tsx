@@ -91,7 +91,6 @@ export class GameBoard extends Component<Props, State> {
 		let visited = new Array(4).fill(0)
         let isDisabled = false
         let sequence = this.state.sequence
-        console.log(guess, this.state.sequence)
         
 		for(var i=0; i<4; i++) {
 			if(guess[i] === 0) {
@@ -155,14 +154,22 @@ export class GameBoard extends Component<Props, State> {
 		else {
             this.setState((prevState) => ({
                 ...prevState,
-                gameResult: false,
-                gameOverModal: true,
-                boardData: getDefaultBoardData(),
-                sequence: newSequence(),
-                startTimer: false,
-                disableGameButton: false,
-                turn: 1
-            }))
+                gameScore: {
+                    time: null,
+                    turns: 0
+                }
+            }), () => {
+                this.setState((prevState) => ({
+                    ...prevState,
+                    gameResult: true,
+                    gameOverModal: true,
+                    boardData: getDefaultBoardData(),
+                    sequence: newSequence(),
+                    startTimer: false,
+                    disableGameButton: false,
+                    turn: 1
+                }))
+            })
 		}
 	}
     
