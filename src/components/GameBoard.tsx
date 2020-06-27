@@ -161,7 +161,7 @@ export class GameBoard extends Component<Props, State> {
             }), () => {
                 this.setState((prevState) => ({
                     ...prevState,
-                    gameResult: true,
+                    gameResult: false,
                     gameOverModal: true,
                     boardData: getDefaultBoardData(),
                     sequence: newSequence(),
