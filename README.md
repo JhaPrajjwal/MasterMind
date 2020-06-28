@@ -1,3 +1,8 @@
+# MasterMind
+MasterMind is a game in which the player has to guess a sequence of colors in a given number of moves.<br />
+The game is hosted using heroku [here](https://master-mind-17.herokuapp.com/).
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
