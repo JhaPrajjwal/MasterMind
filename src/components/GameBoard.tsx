@@ -70,7 +70,7 @@ export class GameBoard extends Component<{}, State> {
 		let rightColor: number = 0
 		let visited = new Array(4).fill(0)
         let sequence = this.state.sequence
-        
+        console.log(sequence, guess)
 		for(var i=0; i<4; i++) {
 			if(guess[i] === 0)
 				return ;
