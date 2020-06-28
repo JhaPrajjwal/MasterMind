@@ -65,13 +65,14 @@ export class GameBoard extends Component<{}, State> {
     }
     
     check = (): void => {
+        let n = Constants.NUMBER_BALLS_IN_ROW
 		let guess = this.state.boardData[this.state.turn-1].selectedBalls
 		let rightPlaced: number = 0
 		let rightColor: number = 0
-		let visited = new Array(4).fill(0)
+		let visited = new Array(n).fill(0)
         let sequence = this.state.sequence
         console.log(sequence, guess)
-		for(var i=0; i<4; i++) {
+		for(var i=0; i<n; i++) {
 			if(guess[i] === 0)
 				return ;
 
@@ -81,9 +82,9 @@ export class GameBoard extends Component<{}, State> {
 			}
 		}
 
-		for(i=0; i<4; i++) {
+		for(i=0; i<n; i++) {
 			if(sequence[i] !== guess[i]) {
-				for(var j=0; j<4; j++) {
+				for(var j=0; j<n; j++) {
 					if(!visited[j] && sequence[j] === guess[i]) {
 						visited[j] = 1
                         rightColor++
@@ -97,7 +98,7 @@ export class GameBoard extends Component<{}, State> {
 		newData[this.state.turn-1].rightlyPlacedColors = rightPlaced
 		newData[this.state.turn-1].wronglyPlacedColors = rightColor
 
-		if(rightPlaced === 4) {
+		if(rightPlaced === n) {
             this.setState((prevState) => ({
                 ...prevState,
                 gameScore: {
@@ -106,8 +107,8 @@ export class GameBoard extends Component<{}, State> {
                 }
             }), () => this.resetBoard(true))
 		}
-		else if(this.state.turn !== 10) {
-            newData[this.state.turn].selectedBalls = [0, 0, 0, 0]
+		else if(this.state.turn !== Constants.NUMBER_ROWS) {
+            newData[this.state.turn].selectedBalls = new Array(Constants.NUMBER_BALLS_IN_ROW).fill(0)
             this.setState((prevState) => ({
                 ...prevState,
                 boardData: newData,
@@ -159,7 +160,7 @@ export class GameBoard extends Component<{}, State> {
                         <Col><BestScore score={gameScore} /></Col>
 
                         <Col xs={6}>
-                            <ProgressBar animated now={(turn-1) * 10} />
+                            <ProgressBar animated now={Math.floor((turn-1)/Constants.NUMBER_ROWS)*100} />
 
                             <BoardDisplay data={boardData} play={this.play} />
 

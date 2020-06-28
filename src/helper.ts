@@ -9,12 +9,12 @@ export const getDefaultBoardData = (): Board[] => {
     for(var i=0; i<Constants.NUMBER_ROWS; i++) {
         data[i] = {
             turn: i+1,
-            selectedBalls: [-1, -1, -1, -1],
+            selectedBalls: new Array(Constants.NUMBER_BALLS_IN_ROW).fill(-1),
             rightlyPlacedColors: null,
             wronglyPlacedColors: null
         }
 	}
-	data[0].selectedBalls = [0, 0, 0, 0]
+	data[0].selectedBalls = new Array(Constants.NUMBER_BALLS_IN_ROW).fill(0)
     return data
 }
 

@@ -2,6 +2,8 @@
 MasterMind is a game in which the player has to guess a sequence of colors in a given number of moves.<br />
 The game is hosted using heroku [here](https://master-mind-17.herokuapp.com/).
 
+To make the game more challenging, you can change the number of rows or number of balls in a row, by updating the same in 
+src/consts.ts file.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
