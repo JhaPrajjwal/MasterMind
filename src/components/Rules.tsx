@@ -14,7 +14,8 @@ function Rules(props: Props) {
         "select the slot in which you want to place the selected ball.",
         "Once all the four balls are placed in the current chance, click on check.",
         "The results are displayed for the current chance.",
-        "The game ends when all the balls are correctly placed, or all the chances are over."
+        "The game ends when all the balls are correctly placed, or all the chances are over.",
+        "All the Best!"
     ]
 
     return (

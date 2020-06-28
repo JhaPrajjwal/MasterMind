@@ -10,7 +10,8 @@ type Props = {
 function Timer(props: Props) {
     const defaultTime: Time = { minutes: 0, seconds: 0}
     const [timeElapsed, changeTimeElapsed] = useState<Time>(defaultTime)
-    const [id, setId] = useState<undefined | NodeJS.Timeout>(undefined)
+
+    const { start } = props
 
     useEffect(() => {
         if(!props.start) {
@@ -27,7 +28,9 @@ function Timer(props: Props) {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [props.start])
+    }, [start])
+
+    const { minutes, seconds } = timeElapsed
 
     return (
         <div>
@@ -36,7 +39,10 @@ function Timer(props: Props) {
 				size={'3rem'}
 			/>
             <h2>Time Elapsed:</h2>
-            <h2>{timeElapsed.minutes} : {timeElapsed.seconds}</h2>
+            <h2>
+                {minutes < 10 ? `0${minutes.toString()}` : minutes}: 
+                {seconds < 10 ? `0${seconds.toString()}` : seconds} 
+            </h2>
         </div>
     )
 }

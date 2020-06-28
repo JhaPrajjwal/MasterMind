@@ -1,12 +1,15 @@
 import React, { Component } from 'react'
-import { ProgressBar, Table, Container, Row, Col, Button } from 'react-bootstrap'
+import { ProgressBar, Container, Row, Col, Button } from 'react-bootstrap'
 import { BsCircleFill } from 'react-icons/bs'
 
-import GameOver from './GameOver'
 import BestScore from './BestScore'
+import BoardDisplay from './BoardDisplay'
+import GameOver from './GameOver'
 import Timer from './Timer'
-import { Time, Score } from '../enums'
 
+import { Time, Score, Board } from '../enums'
+import { newComputerSequence, getDefaultBoardData } from '../helper'
+import Constants from '../consts'
 
 type State = {
     disableGameButton: boolean,
@@ -15,16 +18,13 @@ type State = {
     gameOverModal: boolean,
     startTimer: boolean
     turn: number,
-    boardData: any,
-    selectedBall: string,
+    boardData: Board[],
+    selectedBall: string | null,
     sequence: number[]
 }
 
-type Props = {}
-
-export class GameBoard extends Component<Props, State> {
-    private colors = ['white', 'blue', 'red', 'green', 'yellow', 'pink', 'lightblue', 'maroon']
-    constructor(props: Props) {
+export class GameBoard extends Component<{}, State> {
+    constructor(props: {}) {
         super(props)
     
         this.state = {
@@ -35,40 +35,20 @@ export class GameBoard extends Component<Props, State> {
             startTimer: false,
             turn: 1,
             boardData: getDefaultBoardData(),
-            selectedBall: '_',
-            sequence: newSequence()
+            selectedBall: null,
+            sequence: newComputerSequence(),
         }
-    }
-
-    getBoardRow = (row: number[]): any => {
-		if(row[0] === -1) {
-			return <div></div>
-		}
-
-		return (
-			<div>
-				{
-					row.map((ele, idx) =>
-						<BsCircleFill
-							key={idx}
-							color={ele === 0 ? 'grey' : this.colors[ele-1]}
-							size='1.5rem'
-							style={{marginLeft:'10%'}}
-							onClick={() => this.play(idx)}
-						/>
-					)
-				}
-			</div>
-		)
     }
     
     play = (idx: number): void => {
-		if(this.state.selectedBall === '_') {
+		if(this.state.selectedBall === null) {
 			return ;
 		}
 
 		let newData = [...this.state.boardData]
-        newData[this.state.turn-1].selectedBalls[idx] = this.colors.indexOf(this.state.selectedBall) + 1
+        newData[this.state.turn-1].selectedBalls[idx] = 
+            Constants.COLORS.indexOf(this.state.selectedBall) + 1
+
         this.setState((prevState) => ({
             ...prevState,
             boardData: newData
@@ -89,14 +69,11 @@ export class GameBoard extends Component<Props, State> {
 		let rightPlaced: number = 0
 		let rightColor: number = 0
 		let visited = new Array(4).fill(0)
-        let isDisabled = false
         let sequence = this.state.sequence
         
 		for(var i=0; i<4; i++) {
-			if(guess[i] === 0) {
-				isDisabled = true
-				break
-			}
+			if(guess[i] === 0)
+				return ;
 
 			if(sequence[i] === guess[i]) {
 				visited[i] = 1
@@ -104,11 +81,7 @@ export class GameBoard extends Component<Props, State> {
 			}
 		}
 
-		if(isDisabled) {
-			return ;
-		}
-
-		for(var i=0; i<4; i++) {
+		for(i=0; i<4; i++) {
 			if(sequence[i] !== guess[i]) {
 				for(var j=0; j<4; j++) {
 					if(!visited[j] && sequence[j] === guess[i]) {
@@ -130,18 +103,7 @@ export class GameBoard extends Component<Props, State> {
                     ...prevState.gameScore,
                     turns: prevState.turn
                 }
-            }), () => {
-                this.setState((prevState) => ({
-                    ...prevState,
-                    gameResult: true,
-                    gameOverModal: true,
-                    boardData: getDefaultBoardData(),
-                    sequence: newSequence(),
-                    startTimer: false,
-                    disableGameButton: false,
-                    turn: 1
-                }))
-            })
+            }), () => this.resetBoard(true))
 		}
 		else if(this.state.turn !== 10) {
             newData[this.state.turn].selectedBalls = [0, 0, 0, 0]
@@ -158,79 +120,60 @@ export class GameBoard extends Component<Props, State> {
                     time: null,
                     turns: 0
                 }
-            }), () => {
-                this.setState((prevState) => ({
-                    ...prevState,
-                    gameResult: false,
-                    gameOverModal: true,
-                    boardData: getDefaultBoardData(),
-                    sequence: newSequence(),
-                    startTimer: false,
-                    disableGameButton: false,
-                    turn: 1
-                }))
-            })
+            }), () => this.resetBoard(false))
 		}
-	}
+    }
+    
+    resetBoard = (result: boolean): void => {
+        this.setState((prevState) => ({
+            ...prevState,
+            gameResult: result,
+            gameOverModal: true,
+            boardData: getDefaultBoardData(),
+            sequence: newComputerSequence(),
+            startTimer: false,
+            disableGameButton: false,
+            turn: 1
+        }))
+    }
     
     render() {
+        const { gameOverModal, gameResult, gameScore, turn, boardData,
+            disableGameButton, selectedBall, startTimer } = this.state
+
         return (
             <div>
                 <GameOver
-                    show={this.state.gameOverModal}
-                    result={this.state.gameResult}
-                    score={this.state.gameScore}
-                    onHide={() => {
-                        this.setState((prevState) => ({
-                            ...prevState,
-                            gameOverModal: false
-                        }))
-                    }}
+                    show={gameOverModal}
+                    result={gameResult}
+                    score={gameScore}
+                    onHide={() => this.setState((prevState) => ({
+                        ...prevState,
+                        gameOverModal: false
+                    }))}
                 />
 
                 <Container fluid style={{marginTop:20}}>
                     <Row>
-                        <Col>
-                            <BestScore score={this.state.gameScore} />
-                        </Col>
+                        <Col><BestScore score={gameScore} /></Col>
 
                         <Col xs={6}>
-                            <ProgressBar animated now={(this.state.turn-1) * 10} />
-                            <Table bordered variant="dark" style={{marginTop:10}}>
-                                <thead>
-                                    <tr>
-                                        <th style={{width:"10%"}}>Turn</th>
-                                        <th style={{width:"50%"}}>Board</th>
-                                        <th style={{width:"20%"}}>Right Colors and Correctly Placed</th>
-                                        <th style={{width:"20%"}}>Right Colors but Wrongly Placed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        this.state.boardData.map((row: any, idx: number) => 
-                                            <tr key={idx}>
-                                                <td>{row.turn}</td>
-                                                <td>{this.getBoardRow(row.selectedBalls)}</td>
-                                                <td>{row.rightlyPlacedColors}</td>
-                                                <td>{row.wronglyPlacedColors}</td>
-                                            </tr>
-                                        )
-                                    }
-                                </tbody>
-                            </Table>
+                            <ProgressBar animated now={(turn-1) * 10} />
+
+                            <BoardDisplay data={boardData} play={this.play} />
 
                             <Button
                                 variant="dark" 
                                 onClick={() => this.startGame()}
                                 style={{marginRight:'5px'}}
-                                disabled={this.state.disableGameButton}>
+                                disabled={disableGameButton}>
                                 Start Game
                             </Button>
 
                             <Button
                                 variant="dark"
                                 onClick={() => this.check()}
-                                disabled={!this.state.disableGameButton}>
+                                disabled={!disableGameButton}>
                                 Check
                             </Button>
 
@@ -241,37 +184,33 @@ export class GameBoard extends Component<Props, State> {
                                     marginTop:20}}>
 
                                 <h4>Select a Ball:</h4>
-                                {
-                                    this.colors.map((element, idx) => 
-                                        <BsCircleFill
-                                            key={idx}
-                                            color={element}
-                                            size={this.state.selectedBall === element ? '2.2rem' : '1.5rem'}
-                                            style={{marginLeft:'5%'}}
-                                            onClick={() => {
-                                                this.setState((prevState) => ({
-                                                    ...prevState,
-                                                    selectedBall: element
-                                                }))
-                                            }}
-                                        />
-                                    )
-                                }
+                                {Constants.COLORS.map((element, idx) => 
+                                    <BsCircleFill
+                                        key={idx}
+                                        color={element}
+                                        size={selectedBall === element ? '2.2rem' : '1.5rem'}
+                                        style={{marginLeft:'5%'}}
+                                        onClick={() => this.setState((prevState) => ({
+                                            ...prevState,
+                                            selectedBall: element
+                                        }))}
+                                    />
+                                )}
                             </div>
                         </Col>
 
                         <Col>
                             <Timer
-                                start={this.state.startTimer}
-                                getTimeElapsed={(time: Time) => {
-                                    this.setState((prevState) => ({
+                                start={startTimer}
+                                getTimeElapsed={
+                                    (time: Time) => this.setState((prevState) => ({
                                         ...prevState,
                                         gameScore: {
                                             ...prevState.gameScore,
                                             time: time
                                         }
                                     }))
-                                }}
+                                }
                             />
 					    </Col>
                     </Row>
@@ -283,27 +222,3 @@ export class GameBoard extends Component<Props, State> {
 
 export default GameBoard
 
-
-const getDefaultBoardData = (): any => {
-    let data: any[] = []
-    for(var i=0; i<10; i++) {
-        data.push({
-            turn: i+1,
-            selectedBalls: [-1, -1, -1, -1],
-            rightlyPlacedColors: null,
-            wronglyPlacedColors: null
-        })
-	}
-	data[0].selectedBalls = [0, 0, 0, 0]
-    return data
-}
-
-const newSequence = (): number[] => {
-	let seq: number[] = []
-	const min = 1
-	const max = 9
-	for(var i=0; i<4; i++) {
-		seq.push(Math.floor(Math.random() * (max - min)) + min)
-	}
-	return seq
-}
