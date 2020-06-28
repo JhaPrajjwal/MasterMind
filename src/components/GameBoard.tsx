@@ -86,7 +86,8 @@ export class GameBoard extends Component<{}, State> {
 				for(var j=0; j<4; j++) {
 					if(!visited[j] && sequence[j] === guess[i]) {
 						visited[j] = 1
-						rightColor++
+                        rightColor++
+                        break;
 					}
 				}
 			}
